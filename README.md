@@ -101,9 +101,23 @@ Then **Share → enable public access** to get a link Dana can open without an a
 
 ---
 
+## The customer presentation
+
+`presentation.pdf` — five slides written for Dana rather than for an engineer.
+`presentation/deck.html` is the source it was rendered from; open it in a
+browser to read it as a web page, or re-render with:
+
+```bash
+node presentation/build-deck.mjs presentation.pdf
+```
+
+---
+
 ## Files
 
 ```
+presentation.pdf        The five-slide customer presentation
+presentation/           Source for the slides
 index.html              Home
 tutors.html             Tutor listings, subject filter and search
 book.html               Booking form, confirmation, and existing bookings
