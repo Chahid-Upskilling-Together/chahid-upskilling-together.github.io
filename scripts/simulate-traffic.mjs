@@ -33,15 +33,19 @@ const DAYS = parseInt(opt('days', '60'), 10);
 const DRY_RUN = argv.includes('--dry-run');
 
 /* ---------- Project key ---------- */
-function readKey() {
-  if (process.env.POSTHOG_KEY) return process.env.POSTHOG_KEY;
+function readConfig() {
   const cfg = readFileSync(join(ROOT, 'assets', 'config.js'), 'utf8');
   const key = cfg.match(/posthogKey:\s*'([^']+)'/);
   const host = cfg.match(/posthogHost:\s*'([^']+)'/);
   if (!key) throw new Error('Could not find posthogKey in assets/config.js');
   return { key: key[1], host: host ? host[1] : 'https://us.i.posthog.com' };
 }
-const { key: API_KEY, host: HOST } = readKey();
+const cfgRead = readConfig();
+const API_KEY = process.env.POSTHOG_KEY || cfgRead.key;
+// --host lets you point at the EU cloud (https://eu.i.posthog.com) without
+// editing any files. PostHog's US and EU clouds are separate: sending to the
+// wrong one returns HTTP 200 and then silently drops every event.
+const HOST = opt('host', cfgRead.host);
 
 /* ---------- The world ---------- */
 const TUTORS = [
@@ -213,6 +217,9 @@ const views = tally.tutor_viewed || 0;
 const books = tally.booking_completed || 0;
 console.log(`\n  Browse -> book conversion: ${((books / VISITORS) * 100).toFixed(1)}% of visitors`);
 console.log(`  Tutor views per booking:   ${(views / Math.max(books, 1)).toFixed(1)}\n`);
+
+console.log(`  Sending to: ${HOST}`);
+console.log(`  Project key: ${API_KEY.slice(0, 12)}...${API_KEY.slice(-4)}\n`);
 
 if (DRY_RUN) {
   console.log('Dry run — nothing sent.\n');
