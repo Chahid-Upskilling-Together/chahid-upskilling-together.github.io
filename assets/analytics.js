@@ -8,10 +8,15 @@
  *   "Which subjects are they looking for?"    -> subject_filter_applied / subject_searched
  *   "...especially ones we don't offer?"      -> unmet_subject_searched
  *   "Will parents still want to text me?"     -> text_instead_clicked
+ *
+ * To check that tracking is alive, open the browser console and run:
+ *   ABC_ANALYTICS.status()
  */
 (function () {
   var cfg = window.ABC_CONFIG || {};
   var ready = false;
+  var failed = null;
+  var pending = [];          // events captured before the library finishes loading
 
   /* --- Where did this visitor come from? ---------------------------------
    * Dana names three channels: her Facebook group, word of mouth, and
@@ -35,27 +40,94 @@
     return 'Other website';
   }
 
-  if (cfg.posthogKey && window.posthog && window.posthog.init) {
-    posthog.init(cfg.posthogKey, {
-      api_host: cfg.posthogHost,
-      person_profiles: 'always',
-      capture_pageview: true,
-      capture_pageleave: true
-    });
+  /* --- Load PostHog -------------------------------------------------------
+   * The library is fetched from PostHog's asset host, then initialised in the
+   * load callback. Doing it this way (rather than assuming the library is
+   * already present) means the ordering is explicit, and a failure to load is
+   * reported instead of silently doing nothing.
+   */
+  function assetHost(apiHost) {
+    // https://us.i.posthog.com -> https://us-assets.i.posthog.com
+    return String(apiHost || '').replace('.i.posthog.com', '-assets.i.posthog.com');
+  }
 
-    // Stamped onto every event from this visitor, so any chart can be
-    // broken down by channel without extra work.
-    posthog.register({ traffic_source: trafficSource() });
-    ready = true;
+  function loadPostHog() {
+    if (!cfg.posthogKey) {
+      failed = 'No posthogKey set in assets/config.js';
+      report();
+      return;
+    }
+    var src = (cfg.assetSrc || assetHost(cfg.posthogHost) + '/static/array.js');
+    var s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    s.crossOrigin = 'anonymous';
+
+    s.onload = function () {
+      if (!window.posthog || typeof window.posthog.init !== 'function') {
+        failed = 'PostHog script loaded but did not expose posthog.init';
+        report();
+        return;
+      }
+      try {
+        window.posthog.init(cfg.posthogKey, {
+          api_host: cfg.posthogHost,
+          person_profiles: 'always',
+          capture_pageview: true,
+          capture_pageleave: true
+        });
+        // Stamped onto every event from this visitor, so any chart can be
+        // broken down by channel without extra work.
+        window.posthog.register({ traffic_source: trafficSource() });
+        ready = true;
+        report();
+        // Anything captured while the library was still loading.
+        pending.forEach(function (e) { window.posthog.capture(e[0], e[1]); });
+        pending = [];
+      } catch (err) {
+        failed = 'posthog.init threw: ' + err.message;
+        report();
+      }
+    };
+
+    s.onerror = function () {
+      failed = 'Could not load ' + src +
+        ' — usually an ad blocker, tracking protection, or no network.';
+      report();
+    };
+
+    document.head.appendChild(s);
+  }
+
+  function report() {
+    if (!window.console) return;
+    if (ready) console.info('[analytics] PostHog is connected — events are being sent.');
+    else console.warn('[analytics] PostHog is NOT sending events. Reason: ' + failed);
   }
 
   /* --- Tracking helpers -------------------------------------------------- */
   var ABC = window.ABC_ANALYTICS = {
+    /* Console helper: tells you in one line whether tracking works. */
+    status: function () {
+      return {
+        connected: ready,
+        problem: failed,
+        key: cfg.posthogKey ? cfg.posthogKey.slice(0, 12) + '…' : '(none)',
+        apiHost: cfg.posthogHost,
+        source: trafficSource(),
+        queued: pending.length
+      };
+    },
+
     track: function (event, props) {
-      if (ready) posthog.capture(event, props || {});
+      props = props || {};
+      if (ready) window.posthog.capture(event, props);
+      else if (!failed) pending.push([event, props]);   // still loading — send it later
       // Visible in the browser console during a demo, so the telemetry is
       // not a black box when showing this to Dana.
-      if (window.console && console.debug) console.debug('[analytics]', event, props || {});
+      if (window.console && console.debug) {
+        console.debug('[analytics]' + (ready ? '' : ' (queued)'), event, props);
+      }
     },
 
     tutorViewed: function (tutor, where) {
@@ -140,4 +212,6 @@
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden') reportAbandonment();
   });
+
+  loadPostHog();
 })();
