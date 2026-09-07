@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find a tutor — ABC Tutoring</title>
+<meta name="description" content="Browse ABC Tutoring's tutors by subject and grade level. See experience, hourly rates, and open times.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<script src="assets/config.js"></script>
+<script src="https://us-assets.i.posthog.com/static/array.js"></script>
+<script src="assets/analytics.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">ABC</span><span class="brand-text">Tutoring</span>
+    </a>
+    <nav class="site-nav">
+      <a class="active" href="tutors.html">Tutors</a>
+      <a href="book.html">Bookings</a>
+      <a class="js-text-link" href="#" data-where="header">Text us</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Find a tutor</h2>
+        <p class="section-sub">Filter by subject, or search for what your student needs.</p>
+      </div>
+
+      <div class="search-row">
+        <label class="sr-only" for="subjectSearch">Search for a subject</label>
+        <input id="subjectSearch" type="search" placeholder="Search a subject — e.g. fractions, biology">
+        <button class="btn btn-primary btn-sm" id="searchBtn">Search</button>
+      </div>
+
+      <div class="filters" id="filterRow" role="group" aria-label="Filter by subject"></div>
+
+      <p class="muted" id="resultCount" style="font-size:.9rem;margin-bottom:14px;"></p>
+
+      <div class="tutor-grid" id="tutorGrid"></div>
+
+      <!-- Shown when a parent searches for something we don't teach.
+           This is the moment Dana wants captured: unmet demand. -->
+      <div id="noMatch" hidden>
+        <div class="panel center">
+          <h3>We don't have a tutor for that yet</h3>
+          <p class="muted" id="noMatchText">We're a small team and still growing.</p>
+          <p class="muted">Tell Dana what you're looking for — she keeps a list and hires against it.</p>
+          <a class="btn btn-primary js-text-link" href="#" data-where="no_match">Text us what you need</a>
+        </div>
+      </div>
+
+      <div class="text-banner">
+        <p>
+          <strong>Not sure who's the right fit?</strong>
+          Text Dana and she'll match your student with a tutor.
+        </p>
+        <a class="btn btn-outline btn-sm js-text-link" href="#" data-where="tutors_banner">Text us</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div>
+      <div class="brand"><span class="brand-mark">ABC</span><span class="brand-text">Tutoring</span></div>
+      <p class="footer-note">A small local tutoring service — individual tutors, not a franchise.</p>
+    </div>
+    <div class="footer-contact">
+      <a class="js-text-link" href="#" data-where="footer" id="footerPhone"></a>
+      <a href="#" id="footerEmail"></a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

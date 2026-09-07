@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book a session — ABC Tutoring</title>
+<meta name="description" content="Pick an open time with your ABC Tutoring tutor and book a session.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<script src="assets/config.js"></script>
+<script src="https://us-assets.i.posthog.com/static/array.js"></script>
+<script src="assets/analytics.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">ABC</span><span class="brand-text">Tutoring</span>
+    </a>
+    <nav class="site-nav">
+      <a href="tutors.html">Tutors</a>
+      <a class="active" href="book.html">Bookings</a>
+      <a class="js-text-link" href="#" data-where="header">Text us</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="wrap">
+
+      <!-- Shown when someone lands here without choosing a tutor -->
+      <div id="chooseTutor" hidden>
+        <div class="section-head">
+          <h2>Book a session</h2>
+          <p class="section-sub">Choose a tutor to see their open times.</p>
+        </div>
+        <div class="tutor-grid" id="chooseGrid"></div>
+      </div>
+
+      <!-- The booking form -->
+      <div id="bookingWrap" hidden>
+        <p style="margin-bottom:10px;"><a href="tutors.html">&larr; All tutors</a></p>
+
+        <div class="booking-layout">
+          <div>
+            <div class="panel">
+              <div class="tutor-top" style="margin-bottom:14px;">
+                <div class="avatar" id="bkAvatar"></div>
+                <div>
+                  <div class="tutor-name" id="bkName"></div>
+                  <div class="tutor-grades" id="bkGrades"></div>
+                </div>
+              </div>
+              <p class="tutor-exp" id="bkExp"></p>
+              <div class="tag-row" id="bkSubjects"></div>
+            </div>
+
+            <form class="panel" id="bookingForm" novalidate>
+              <fieldset>
+                <legend>1. Pick an open time</legend>
+                <div id="slotArea"></div>
+                <p class="field-error" id="slotError" hidden>Please choose a time.</p>
+                <p class="field-hint">Sessions are 60 minutes. Times already booked are not shown.</p>
+              </fieldset>
+
+              <fieldset>
+                <legend>2. How should the session happen?</legend>
+                <div class="radio-row" id="formatRow"></div>
+              </fieldset>
+
+              <fieldset>
+                <legend>3. Your details</legend>
+                <div class="two-up">
+                  <div class="field">
+                    <label for="parentName">Your name</label>
+                    <input id="parentName" type="text" autocomplete="name" placeholder="Jamie Alvarez">
+                  </div>
+                  <div class="field">
+                    <label for="parentEmail">Your email</label>
+                    <input id="parentEmail" type="email" autocomplete="email" placeholder="jamie@example.com">
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend>4. About your student</legend>
+                <div class="two-up">
+                  <div class="field">
+                    <label for="studentName">Student's first name</label>
+                    <input id="studentName" type="text" placeholder="Sam">
+                  </div>
+                  <div class="field">
+                    <label for="studentGrade">Grade</label>
+                    <select id="studentGrade">
+                      <option value="">Select a grade</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="subjectWanted">Subject you'd like help with</label>
+                  <select id="subjectWanted"></select>
+                </div>
+              </fieldset>
+
+              <p class="field-error" id="formError" hidden></p>
+              <button class="btn btn-primary btn-block" type="submit">Confirm booking</button>
+              <p class="field-hint center">
+                No payment now — Dana invoices families directly after sessions.
+              </p>
+            </form>
+          </div>
+
+          <aside>
+            <div class="panel">
+              <h3>Your session</h3>
+              <div class="summary-line"><span>Tutor</span><span id="sumTutor">—</span></div>
+              <div class="summary-line"><span>When</span><span id="sumWhen">Pick a time</span></div>
+              <div class="summary-line"><span>Format</span><span id="sumFormat">—</span></div>
+              <div class="summary-line"><span>Rate</span><span id="sumRate">—</span></div>
+            </div>
+            <div class="panel">
+              <p style="margin:0 0 10px;font-size:.94rem;">
+                <strong>Rather do this by text?</strong><br>
+                <span class="muted">Dana still books sessions personally.</span>
+              </p>
+              <a class="btn btn-outline btn-block btn-sm js-text-link" href="#" data-where="booking_sidebar">Text us instead</a>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- Confirmation -->
+      <div id="confirmWrap" hidden>
+        <div class="panel" style="max-width:560px;margin:0 auto;">
+          <div class="confirm-icon">✓</div>
+          <h2>You're booked!</h2>
+          <p id="confirmLead" class="muted"></p>
+          <div class="summary-line"><span>Tutor</span><span id="cfTutor"></span></div>
+          <div class="summary-line"><span>When</span><span id="cfWhen"></span></div>
+          <div class="summary-line"><span>Format</span><span id="cfFormat"></span></div>
+          <div class="summary-line"><span>Student</span><span id="cfStudent"></span></div>
+          <div class="summary-line"><span>Subject</span><span id="cfSubject"></span></div>
+          <p class="field-hint" style="margin-top:16px;">
+            That time is now closed on the tutor's calendar, so nobody else can take it.
+            Need to change or cancel? Just text Dana.
+          </p>
+          <div class="card-actions" style="margin-top:16px;">
+            <a class="btn btn-primary" href="tutors.html">Book another</a>
+            <a class="btn btn-outline" href="book.html">View my bookings</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Existing bookings -->
+      <div id="myBookings" style="margin-top:36px;">
+        <div class="section-head">
+          <h2>My bookings</h2>
+          <p class="section-sub">Saved on this device.</p>
+        </div>
+        <div class="booking-list" id="bookingList"></div>
+        <p class="empty-state" id="noBookings">No sessions booked yet. <a href="tutors.html">Find a tutor →</a></p>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div>
+      <div class="brand"><span class="brand-mark">ABC</span><span class="brand-text">Tutoring</span></div>
+      <p class="footer-note">A small local tutoring service — individual tutors, not a franchise.</p>
+    </div>
+    <div class="footer-contact">
+      <a class="js-text-link" href="#" data-where="footer" id="footerPhone"></a>
+      <a href="#" id="footerEmail"></a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
